@@ -24,3 +24,7 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Exclude guidelines and security checklists from repository
+PROJECT_SECURITY_CHECKLIST.md
+UI_DESIGN_SYSTEM_PROMPT.md
