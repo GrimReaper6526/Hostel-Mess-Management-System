@@ -1,0 +1,75 @@
+
+<div class="page-hdr">
+  <h2 id="complaint-title">Maintenance Service Desk</h2>
+  <p>Lodge and track institutional support requests.</p>
+</div>
+
+<div class="grid-2" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 32px">
+  
+  <div class="card">
+    <div class="card-hdr">
+      <h3>File Request</h3>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>Service Domain</label>
+        <select id="comp-cat">
+          <option value="Maintenance">Institutional Maintenance</option>
+          <option value="Mess">Dining & Nutrition</option>
+          <option value="Security">Campus Security</option>
+          <option value="Electricity">Electrical Infrastructure</option>
+          <option value="Water">Hydraulic Systems</option>
+          <option value="Internet">Digital Connectivity</option>
+          <option value="Other">Miscellaneous</option>
+        </select>
+      </div>
+      <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+          <div class="form-group">
+            <label>Priority Level</label>
+            <select id="comp-priority">
+              <option value="Low">Standard</option>
+              <option value="Medium" selected>Urgent</option>
+              <option value="High">Emergency</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="comp-title" placeholder="Short summary" />
+          </div>
+      </div>
+      <div class="form-group">
+        <label>Extended Narrative</label>
+        <textarea id="comp-desc" placeholder="Describe the issue in detail..."></textarea>
+      </div>
+      <button class="btn btn-gold w-100" onclick="submitComplaint()">Dispatch Application ◹</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      <h3>Active Ledger</h3>
+      <div style="display: flex; gap: 8px">
+        <button class="btn btn-sm btn-ghost" onclick="filterComplaints('all',this)">All Ledger</button>
+        <button class="btn btn-sm btn-ghost" onclick="filterComplaints('Open',this)">Pending</button>
+      </div>
+    </div>
+    <div class="card-body">
+       <div class="tbl-wrap">
+          <table id="complaints-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Domain</th>
+                <th>Priority</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="complaints-list">
+              <!-- Dynamically populated card rows -->
+            </tbody>
+          </table>
+       </div>
+    </div>
+  </div>
+
+</div>

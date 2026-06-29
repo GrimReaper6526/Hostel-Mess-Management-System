@@ -1,0 +1,35 @@
+<div class="page-hdr" style="margin-bottom: 40px;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+      <h2 style="font-family: var(--font-serif); font-size: 42px; color: var(--navy); font-weight: 700; letter-spacing: -1px;">Hostel Wings & Halls</h2>
+      <p style="font-size: 15px; color: var(--slate-500); margin-top: 8px;">Explore our institutional residences. Allocation is dynamically processed based on academic merit.</p>
+    </div>
+    <div class="system-status" style="margin-bottom: 0;">
+      <div class="status-pulse"></div>
+      <div class="status-text">Live Occupancy Monitoring</div>
+    </div>
+  </div>
+</div>
+
+<div class="kpi-grid" style="margin-bottom: 40px;">
+  <div class="kpi" style="--kpi-color: var(--navy);">
+    <div class="kpi-icon">🏛️</div>
+    <div class="kpi-val" id="total-halls-count">...</div>
+    <div class="kpi-label">Active Wings</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--gold);">
+    <div class="kpi-icon">🛌</div>
+    <div class="kpi-val" id="total-capacity-count">...</div>
+    <div class="kpi-label">Total Capacity</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--emerald);">
+    <div class="kpi-icon">📈</div>
+    <div class="kpi-val" id="avg-occupancy-rate">...</div>
+    <div class="kpi-label">Avg. Occupancy</div>
+  </div>
+</div>
+
+<div class="hall-grid" id="halls-grid">
+  <!-- Dynamic Hall Cards injected via loadHalls -->
+</div>
+

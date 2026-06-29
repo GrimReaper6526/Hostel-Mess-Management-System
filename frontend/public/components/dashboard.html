@@ -1,0 +1,101 @@
+<div class="page-hdr" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;">
+  <div>
+    <h2 id="dash-greeting" style="font-family: var(--font-serif); font-size: 42px; color: var(--navy); font-weight: 700; letter-spacing: -1px; line-height: 1.1;">Good Morning, Student</h2>
+    <p id="current-date-display" style="font-size: 15px; color: var(--slate-500); margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+       <span style="display:inline-block; width:12px; height:1px; background:var(--gold);"></span>
+       February 24, 2025
+    </p>
+  </div>
+  <div style="display: flex; gap: 12px;">
+    <button class="btn btn-ghost" onclick="window.print()" style="padding: 12px 20px;">
+      <span>🖨️</span> Print Report
+    </button>
+    <button class="btn btn-gold" onclick="navigateTo('booking')" style="display: flex; align-items: center; gap: 8px;">
+      <span>🛏️</span> Placement Dashboard
+    </button>
+  </div>
+</div>
+
+<div class="command-center">
+  <div class="system-status">
+    <div class="status-pulse"></div>
+    <div class="status-text">Core System Online • Secure Data Feed</div>
+  </div>
+  
+  <div class="bento-grid" id="student-kpis">
+    <!-- Dynamic Bento Items injected via loadStudentDash -->
+  </div>
+</div>
+
+
+<!-- TWO COLUMN GRID -->
+<div class="grid-2" style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-bottom: 32px;">
+  
+  <div class="card glass-panel" style="overflow: hidden;">
+    <div class="card-hdr">
+      <h3>Active Resident Status</h3>
+      <button class="btn btn-ghost btn-sm" onclick="navigateTo('halls')" style="border-radius: 99px;">Hostel Wings</button>
+    </div>
+    <div class="card-body" id="booking-status-card">
+       <div style="padding: 32px; background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1)); border-radius: 20px; border: 1px solid rgba(255,255,255,0.5); display: flex; align-items: center; gap: 20px;">
+         <div style="font-size: 32px; background: white; width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.03);">🏠</div>
+         <div>
+           <div style="font-size: 18px; font-weight: 700; color: var(--navy);">Assigned Residence Wing</div>
+           <div style="font-size: 14px; color: var(--slate-500); margin-top: 4px;">Synchronizing with central occupancy database...</div>
+         </div>
+       </div>
+    </div>
+  </div>
+
+  <div class="card glass-panel" style="overflow: hidden;">
+    <div class="card-hdr">
+      <h3>Dining Summary</h3>
+      <button class="btn btn-ghost btn-sm" onclick="navigateTo('mess')" style="border-radius: 99px;">Full Menu</button>
+    </div>
+    <div class="card-body">
+      <div id="today-menu-summary" style="margin-bottom: 20px; color: var(--slate-700);">
+         <!-- Short menu summary injected dynamically -->
+      </div>
+      <div style="padding: 20px; background: rgba(197, 160, 89, 0.08); border-radius: 16px; border: 1px solid rgba(197, 160, 89, 0.2); display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 24px; background: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">🍽️</span>
+        <div>
+          <div style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;">Subscription Status</div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 2px;">Active • Standard Meal Plan</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TWO COLUMN LOWER GRID -->
+<div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+    
+    <div class="card glass-panel" style="overflow: hidden;">
+      <div class="card-hdr">
+        <h3>Activity Ledger</h3>
+      </div>
+      <div class="card-body">
+        <div class="timeline" id="activity-feed">
+          <div class="tl-item">
+            <div class="tl-dot" style="background: rgba(197, 160, 89, 0.1); width: 12px; height: 12px;"></div>
+            <div class="tl-content">
+              <div class="tl-title">Active Session Initialized</div>
+              <div class="tl-time">System Online</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card glass-panel" style="overflow: hidden;">
+      <div class="card-hdr">
+        <h3>Pending Dues</h3>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('fees')" style="border-radius: 99px;">Financials →</button>
+      </div>
+      <div class="card-body" id="fee-summary-card">
+         <!-- Mini fee list dynamically loaded -->
+      </div>
+    </div>
+
+</div>

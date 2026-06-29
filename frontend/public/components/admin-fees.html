@@ -1,0 +1,28 @@
+<div class="page-hdr">
+  <h2>Fee Management</h2>
+</div>
+
+<div class="kpi-grid" id="admin-fees-kpis" style="margin-bottom:20px">
+  <div class="kpi" style="--kpi-color:var(--emerald)"><div class="kpi-icon">💰</div><div class="kpi-val" id="total-collected">PKR 0</div><div class="kpi-label">Total Collected</div></div>
+  <div class="kpi" style="--kpi-color:var(--ruby)"><div class="kpi-icon">⚠️</div><div class="kpi-val" id="total-outstanding">PKR 0</div><div class="kpi-label">Outstanding Dues</div></div>
+  <div class="kpi" style="--kpi-color:var(--sky)"><div class="kpi-icon">📊</div><div class="kpi-val" id="collection-rate">0%</div><div class="kpi-label">Collection Rate</div></div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">
+    <div class="flex gap-2" id="admin-fee-filters">
+        <button class="btn btn-ghost btn-sm active-filter" onclick="filterAdminFees('all', this)">All Fees</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterAdminFees('Hall', this)">Hall Fees</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterAdminFees('Mess', this)">Mess Fees</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterAdminFees('unpaid', this)">Unpaid Only</button>
+        <span style="border-right:1px solid var(--slate-200); margin:0 10px"></span>
+        <button class="btn btn-ghost btn-sm" style="color: var(--amber); font-weight: 600;" onclick="filterAdminFees('pending', this)">Pending Verifications</button>
+        <button class="btn btn-ghost btn-sm" style="color: var(--navy); font-weight: 600;" onclick="filterAdminFees('billing', this)">⚙️ Process Billing Cycle</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="tbl-wrap" id="admin-fees-table">
+      <!-- Fee table or control panels will be rendered here -->
+    </div>
+  </div>
+</div>

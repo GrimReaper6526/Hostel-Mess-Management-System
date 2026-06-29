@@ -1,0 +1,65 @@
+<div class="page-hdr page-hdr-row">
+  <div>
+    <h2>Mess Planner & Activity</h2>
+    <p>Manage daily mess activity, student attendance, and weekly billing.</p>
+  </div>
+</div>
+
+<div class="kpi-grid" id="admin-mess-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
+  <!-- Stats injected dynamically -->
+</div>
+
+<div class="card" style="margin-bottom: 24px; background: var(--white); border-radius: var(--radius-lg); border: 1px solid rgba(0, 0, 0, 0.04);">
+    <div class="card-hdr" style="padding: 20px 24px; border-bottom: 1px solid rgba(0, 0, 0, 0.03);">
+        <h3 style="font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy);">Quick Mark Dining Attendance</h3>
+    </div>
+    <div class="card-body" style="padding: 24px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 2; min-width: 250px; margin-bottom: 0;">
+            <label style="font-size: 12px; font-weight: 600; color: var(--slate-500); text-transform: uppercase; margin-bottom: 8px; display: block;">Select Student</label>
+            <select id="quick-mark-student" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid var(--slate-200); padding: 0 12px; background: var(--bg-card); color: var(--navy); font-size: 14px; font-weight: 500;">
+                <option value="">-- Choose Student --</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+            <label style="font-size: 12px; font-weight: 600; color: var(--slate-500); text-transform: uppercase; margin-bottom: 8px; display: block;">Meal Type</label>
+            <select id="quick-mark-meal" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid var(--slate-200); padding: 0 12px; background: var(--bg-card); color: var(--navy); font-size: 14px; font-weight: 500;">
+                <option value="Breakfast">🍳 Breakfast</option>
+                <option value="Lunch">🍱 Lunch</option>
+                <option value="Dinner">🍲 Dinner</option>
+            </select>
+        </div>
+        <button class="btn btn-navy" onclick="submitQuickAttendance()" style="height: 40px; padding: 0 24px; font-weight: 600; border-radius: 8px; display: flex; align-items: center; justify-content: center;">Mark Attendance</button>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-hdr" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Generated Weekly Mess Bills</h3>
+        <button class="btn btn-navy btn-sm" onclick="showGenerateBillsModal()">Generate Weekly Bills</button>
+    </div>
+    <div class="card-body">
+        <table class="table" style="width: 100%; text-align: left; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--slate-200); font-size: 13px; color: var(--slate-500);">
+              <th style="padding: 12px 0;">Student</th>
+              <th>Week</th>
+              <th>Status</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="admin-weekly-bills-table">
+            <!-- Weekly Bills dynamically generated -->
+          </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-hdr" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Mess Attendance & Billing Marksheet (Current Month)</h3>
+        <button class="btn btn-emerald btn-sm" onclick="exportMessReport()">Download Report (CSV)</button>
+    </div>
+    <div class="card-body" id="admin-mess-report-table">
+        <div class="loader">Loading mess marksheet...</div>
+    </div>
+</div>

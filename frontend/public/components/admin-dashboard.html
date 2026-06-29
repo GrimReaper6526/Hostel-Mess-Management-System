@@ -1,0 +1,81 @@
+<div class="page-hdr" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+  <div>
+    <h2 id="managed-hall-name" style="font-family: var(--font-serif); font-size: 32px; color: var(--navy); font-weight: 700; letter-spacing: -0.5px;">Control Panel</h2>
+    <p style="font-size: 14px; color: var(--slate-500); margin-top: 4px;">Institutional Command & Operational Intelligence Overview</p>
+  </div>
+  <div style="display: flex; gap: 12px">
+    <button class="btn btn-navy" onclick="exportReport()" style="display: flex; align-items: center; gap: 8px;">
+      <span>📑</span> Export Audit Report
+    </button>
+  </div>
+</div>
+
+<!-- COMMAND KPIs -->
+<div class="kpi-grid" id="admin-kpis" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 32px;">
+  <!-- Dynamic Stats loaded via loadAdminDash -->
+</div>
+
+<div class="grid-2" style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-bottom: 32px;">
+  
+  <div class="card" style="background: var(--white); border-radius: var(--r-lg); border: 1px solid rgba(0, 0, 0, 0.04); overflow: hidden;">
+    <div class="card-hdr" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid rgba(0, 0, 0, 0.03);">
+      <h3 style="font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy);">Wing Occupancy Summary</h3>
+      <span class="pill pill-green" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald); font-weight: 700; padding: 4px 12px; border-radius: 99px; font-size: 11px;">Status: Active</span>
+    </div>
+    <div class="card-body" style="padding: 24px;">
+      <div id="occupancy-visual-container" style="min-height: 145px; height: auto; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; padding: 4px 16px; background: none; border: none; overflow-y: auto;">
+         <div style="text-align: center; color: var(--slate-400); font-size: 13px; padding-top: 50px;">Analyzing wing occupancy...</div>
+      </div>
+      <div style="display: flex; justify-content: space-around; margin-top: 24px;">
+        <div style="text-align: center;">
+          <div id="occ-pct" style="font-size: 26px; font-weight: 700; color: var(--navy); font-family: var(--font-serif);">0%</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-400); font-weight: 700; margin-top: 4px; letter-spacing: 0.5px;">Total Occupancy</div>
+        </div>
+        <div style="text-align: center;">
+          <div id="occ-vacant" style="font-size: 26px; font-weight: 700; color: var(--navy); font-family: var(--font-serif);">0</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-400); font-weight: 700; margin-top: 4px; letter-spacing: 0.5px;">Vacant Units</div>
+        </div>
+        <div style="text-align: center;">
+          <div id="occ-maintenance" style="font-size: 26px; font-weight: 700; color: var(--navy); font-family: var(--font-serif);">0</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-400); font-weight: 700; margin-top: 4px; letter-spacing: 0.5px;">Maintenance Items</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background: var(--white); border-radius: var(--r-lg); border: 1px solid rgba(0, 0, 0, 0.04); overflow: hidden;">
+    <div class="card-hdr" style="padding: 20px 24px; border-bottom: 1px solid rgba(0, 0, 0, 0.03);">
+      <h3 style="font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy);">Admin Bulletins</h3>
+    </div>
+    <div class="card-body" id="announce-zone-admin" style="padding: 24px;">
+      <!-- Admin specific announcements loaded dynamically -->
+    </div>
+  </div>
+
+</div>
+
+<div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+    
+    <div class="card" style="background: var(--white); border-radius: var(--r-lg); border: 1px solid rgba(0, 0, 0, 0.04); overflow: hidden;">
+      <div class="card-hdr" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid rgba(0, 0, 0, 0.03);">
+        <h3 style="font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy);">Critical Support Items</h3>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('admin-complaints')">Service Resolutions</button>
+      </div>
+      <div class="card-body" style="padding: 24px;">
+         <div class="timeline" id="admin-activity" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Dynamic events loaded via loadAdminDash -->
+         </div>
+      </div>
+    </div>
+
+    <div class="card" style="background: var(--white); border-radius: var(--r-lg); border: 1px solid rgba(0, 0, 0, 0.04); overflow: hidden;">
+      <div class="card-hdr" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid rgba(0, 0, 0, 0.03);">
+        <h3 style="font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy);">Pending Allocations</h3>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('admin-bookings')">Review Queue</button>
+      </div>
+      <div class="card-body" id="pending-bookings-card" style="padding: 24px;">
+         <!-- Dynamic pending bookings loaded here -->
+      </div>
+    </div>
+
+</div>

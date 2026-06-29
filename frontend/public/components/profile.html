@@ -1,0 +1,31 @@
+
+<div class="page-hdr">
+  <h2>Institutional Identity</h2>
+  <p>Official residency credentials and personal dossier.</p>
+</div>
+
+<div class="grid-2" style="display: grid; grid-template-columns: 1fr 2fr; gap: 32px">
+  
+  <div class="card">
+    <div class="card-body" style="text-align: center; padding: 40px 32px">
+        <div class="sb-avatar" style="width: 120px; height: 120px; font-size: 44px; margin: 0 auto 24px; border-width: 4px" id="profile-avatar">👤</div>
+        <h3 id="profile-name" style="font-family: var(--font-serif); font-size: 28px; color: var(--navy)">Student Name</h3>
+        <p id="profile-id" style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); font-weight: 800; margin-top: 8px">ID: 2021-MS-CS-23</p>
+        
+        <div id="profile-action-buttons" style="margin-top: 32px; display: flex; flex-direction: column; gap: 12px">
+            <button class="btn btn-navy w-100" onclick="editProfile()">Update Credentials</button>
+            <button class="btn btn-ghost w-100" onclick="logout()">Terminate Session</button>
+        </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      <h3>Dossier Particulars</h3>
+    </div>
+    <div class="card-body" id="profile-details-grid">
+       <!-- Dynamic detail cells -->
+    </div>
+  </div>
+
+</div>

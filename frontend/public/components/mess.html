@@ -1,0 +1,63 @@
+<div class="page-hdr page-hdr-row">
+  <div>
+    <h2>Mess Menu & Activity</h2>
+    <p>Weekly meal schedule — nutritious & halal. Manage your meals and bills here.</p>
+  </div>
+</div>
+<div class="day-tabs" id="day-tabs"></div>
+<div id="mess-content"></div>
+
+<div id="mess-activity-section" style="margin-top: 40px; display: none;">
+  <div class="page-hdr">
+    <h3>Daily Mess Activity & Expenses</h3>
+    <p>Track your meal expenses across different timeframes.</p>
+  </div>
+  <div class="kpi-grid" id="mess-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
+    <!-- Stats injected dynamically -->
+  </div>
+  
+  <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Recent Meal History</h3>
+      </div>
+      <div class="card-body">
+        <table class="table" style="width: 100%; text-align: left; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--slate-200); font-size: 13px; color: var(--slate-500);">
+              <th style="padding: 12px 0;">Date</th>
+              <th>Meal</th>
+              <th>Price</th>
+              <th>Unit</th>
+              <th style="text-align: right;">Final</th>
+            </tr>
+          </thead>
+          <tbody id="mess-history-table">
+            <!-- History dynamically generated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-hdr" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Weekly Mess Bills</h3>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('fees')">Pay Dues</button>
+      </div>
+      <div class="card-body">
+        <table class="table" style="width: 100%; text-align: left; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--slate-200); font-size: 13px; color: var(--slate-500);">
+              <th style="padding: 12px 0;">Week</th>
+              <th>Status</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="mess-weekly-bills-table">
+            <!-- Weekly Bills dynamically generated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
