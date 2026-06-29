@@ -134,7 +134,7 @@ GO
 
 -- ── MESS CATEGORIES ──────────────────────────────────────────
 INSERT INTO MessCategories (CategoryName) VALUES
-('Breakfast'),('Lunch'),('Dinner'),('Snack');
+('Breakfast'),('Lunch'),('Dinner');
 GO
 
 -- ── FOOD ITEMS ───────────────────────────────────────────────

@@ -126,30 +126,19 @@ CREATE TABLE Students (
     StudentID   INT IDENTITY(1,1) PRIMARY KEY,
     RegNumber   VARCHAR(30) NOT NULL UNIQUE,
     FullName    VARCHAR(100) NOT NULL,
-    CNIC        CHAR(13) NULL,                      -- Pakistani ID card number (allows multiple NULLs via index)
     Email       VARCHAR(120) NOT NULL UNIQUE,
     PasswordHash VARCHAR(255) NOT NULL,
     Phone       VARCHAR(15),
-    Gender      CHAR(1) CHECK (Gender IN ('M','F','O')),
     DateOfBirth DATE CHECK (DateOfBirth < GETDATE()),
     CGPA        DECIMAL(3,2) NOT NULL CHECK (CGPA >= 0.00 AND CGPA <= 4.00),
     DeptID      INT NOT NULL,
     Semester    INT NOT NULL CHECK (Semester BETWEEN 1 AND 12),
-    GuardianName VARCHAR(100),
-    GuardianPhone VARCHAR(15),
-    HomeAddress VARCHAR(300),
     IsActive    BIT DEFAULT 1,
     CreatedAt   DATETIME DEFAULT GETDATE(),
     UpdatedAt   DATETIME DEFAULT GETDATE(),
     CONSTRAINT fk_students_dept FOREIGN KEY (DeptID)
         REFERENCES Departments(DeptID)
 );
-GO
-
--- Filtered Unique Index on CNIC to allow multiple NULL values in SQL Server
-CREATE UNIQUE NONCLUSTERED INDEX UQ_Students_CNIC_NonNull
-ON Students(CNIC)
-WHERE CNIC IS NOT NULL;
 GO
 
 -- 2.5 ADMINS (Wardens, Sub-Wardens)
@@ -202,29 +191,6 @@ CREATE TABLE Bookings (
 );
 GO
 
--- 3.2 ROOM TRANSFERS (Student moving from one room to another)
--- CONCEPT: Self-referencing via StudentID, multiple FKs to same table
-CREATE TABLE RoomTransfers (
-    TransferID      INT IDENTITY(1,1) PRIMARY KEY,
-    StudentID       INT NOT NULL,
-    OldRoomID       INT NOT NULL,
-    NewRoomID       INT NOT NULL,
-    OldHallID       INT NOT NULL,
-    NewHallID       INT NOT NULL,
-    TransferDate    DATE NOT NULL DEFAULT CAST(GETDATE() AS DATE),
-    Reason          VARCHAR(300),
-    ApprovedBy      INT NOT NULL,
-    Status          VARCHAR(20) DEFAULT 'Pending' CHECK (Status IN ('Pending','Approved','Rejected')),
-    CONSTRAINT fk_transfer_student FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
-    CONSTRAINT fk_transfer_old_room FOREIGN KEY (OldRoomID) REFERENCES Rooms(RoomID),
-    CONSTRAINT fk_transfer_new_room FOREIGN KEY (NewRoomID) REFERENCES Rooms(RoomID),
-    CONSTRAINT fk_transfer_old_hall FOREIGN KEY (OldHallID) REFERENCES Halls(HallID),
-    CONSTRAINT fk_transfer_new_hall FOREIGN KEY (NewHallID) REFERENCES Halls(HallID),
-    CONSTRAINT fk_transfer_admin   FOREIGN KEY (ApprovedBy) REFERENCES Admins(AdminID),
-    CONSTRAINT chk_diff_rooms CHECK (OldRoomID <> NewRoomID) -- rooms must differ
-);
-GO
-
 -- ============================================================
 -- SECTION 4: MESS / FOOD TABLES
 -- CONCEPT: Normalization (2NF — no partial dependency)
@@ -256,29 +222,10 @@ CREATE TABLE MessMenu (
                 ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')),
     MessCatID   INT NOT NULL,
     FoodID      INT NOT NULL,
-    HallID      INT,  -- NULL = applies to all halls
     IsActive    BIT DEFAULT 1,
     CONSTRAINT fk_menu_cat  FOREIGN KEY (MessCatID) REFERENCES MessCategories(MessCatID),
     CONSTRAINT fk_menu_food FOREIGN KEY (FoodID)    REFERENCES FoodItems(FoodID),
-    CONSTRAINT fk_menu_hall FOREIGN KEY (HallID)    REFERENCES Halls(HallID),
-    CONSTRAINT uq_menu_slot UNIQUE (DayOfWeek, MessCatID, FoodID, HallID) -- no duplicates
-);
-GO
-
--- 4.4 MESS SUBSCRIPTIONS (Student subscribes to mess plan)
-CREATE TABLE MessSubscriptions (
-    SubscriptionID INT IDENTITY(1,1) PRIMARY KEY,
-    StudentID      INT NOT NULL,
-    HallID         INT NOT NULL,
-    PlanType       VARCHAR(20) NOT NULL DEFAULT 'Full'
-                   CHECK (PlanType IN ('Full','Breakfast Only','Lunch Only','Dinner Only')),
-    StartDate      DATE NOT NULL,
-    EndDate        DATE,
-    IsActive       BIT DEFAULT 1,
-    MonthlyCharge  DECIMAL(10,2) NOT NULL CHECK (MonthlyCharge >= 0),
-    CONSTRAINT fk_messsub_student FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
-    CONSTRAINT fk_messsub_hall    FOREIGN KEY (HallID)    REFERENCES Halls(HallID),
-    CONSTRAINT uq_student_active_sub UNIQUE (StudentID, IsActive) -- only 1 active sub
+    CONSTRAINT uq_menu_slot UNIQUE (DayOfWeek, MessCatID, FoodID) -- no duplicates
 );
 GO
 
@@ -320,7 +267,6 @@ GO
 CREATE TABLE MessBillRecords (
     BillID      INT IDENTITY(1,1) PRIMARY KEY,
     StudentID   INT NOT NULL,
-    SubID       INT NOT NULL,
     Month       INT NOT NULL CHECK (Month BETWEEN 1 AND 12),
     Year        INT NOT NULL CHECK (Year BETWEEN 2000 AND 2100),
     Amount      DECIMAL(10,2) NOT NULL CHECK (Amount >= 0),
@@ -328,8 +274,7 @@ CREATE TABLE MessBillRecords (
     IsPaid      BIT DEFAULT 0,
     PaidOn      DATETIME,
     CONSTRAINT fk_messbill_student FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
-    CONSTRAINT fk_messbill_sub     FOREIGN KEY (SubID)     REFERENCES MessSubscriptions(SubscriptionID),
-    CONSTRAINT uq_mess_bill_period UNIQUE (StudentID, SubID, Month, Year)
+    CONSTRAINT uq_mess_bill_period UNIQUE (StudentID, Month, Year)
 );
 GO
 
@@ -387,33 +332,13 @@ GO
 GO
 
 -- ============================================================
--- SECTION 7: ATTENDANCE / VISITOR MANAGEMENT
+-- SECTION 7: MESS ATTENDANCE
 -- ============================================================
-
--- 7.1 VISITOR LOG
-CREATE TABLE VisitorLog (
-    VisitID     INT IDENTITY(1,1) PRIMARY KEY,
-    VisitorName VARCHAR(100) NOT NULL,
-    CNIC        CHAR(13),
-    Phone       VARCHAR(15),
-    StudentID   INT NOT NULL,           -- visiting which student
-    HallID      INT NOT NULL,
-    Purpose     VARCHAR(200),
-    CheckIn     DATETIME NOT NULL DEFAULT GETDATE(),
-    CheckOut    DATETIME,
-    ApprovedBy  INT,
-    CONSTRAINT fk_visitor_student FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
-    CONSTRAINT fk_visitor_hall    FOREIGN KEY (HallID)    REFERENCES Halls(HallID),
-    CONSTRAINT fk_visitor_admin   FOREIGN KEY (ApprovedBy) REFERENCES Admins(AdminID),
-    CONSTRAINT chk_checkout CHECK (CheckOut IS NULL OR CheckOut > CheckIn)
-);
-GO
-
--- 7.2 STUDENT ATTENDANCE (nightly roll call) (REMOVED - UNUSED)
 
 CREATE TABLE MessAttendance (
     AttendanceID    INT IDENTITY(1,1) PRIMARY KEY,
     StudentID       INT NOT NULL,
+    StudentName     VARCHAR(100) NULL,
     MenuID          INT NOT NULL,
     MealType        VARCHAR(20) NOT NULL,
     PriceAtTime     DECIMAL(10,2) NOT NULL,
@@ -425,44 +350,11 @@ CREATE TABLE MessAttendance (
 );
 GO
 
--- ============================================================
--- SECTION 8: NOTICES / ANNOUNCEMENTS (REMOVED - UNUSED)
--- ============================================================
-
--- ============================================================
--- SECTION 9: MAINTENANCE REQUESTS
--- ============================================================
-
-CREATE TABLE MaintenanceRequests (
-    RequestID   INT IDENTITY(1,1) PRIMARY KEY,
-    RoomID      INT NOT NULL,
-    HallID      INT NOT NULL,
-    ReportedBy  INT NOT NULL,       -- StudentID
-    IssueType   VARCHAR(50) NOT NULL CHECK (IssueType IN
-                ('Plumbing','Electrical','Furniture','AC','WiFi','Paint','Other')),
-    Description VARCHAR(1000),
-    Status      VARCHAR(20) DEFAULT 'Pending'
-                CHECK (Status IN ('Pending','Scheduled','In Progress','Done','Cancelled')),
-    Priority    VARCHAR(10) DEFAULT 'Normal' CHECK (Priority IN ('Low','Normal','High','Emergency')),
-    AssignedTo  INT,                -- AdminID
-    ScheduledDate DATE,
-    CompletedDate DATE,
-    Cost        DECIMAL(10,2) CHECK (Cost >= 0),
-    CONSTRAINT fk_maint_room    FOREIGN KEY (RoomID)     REFERENCES Rooms(RoomID),
-    CONSTRAINT fk_maint_hall    FOREIGN KEY (HallID)     REFERENCES Halls(HallID),
-    CONSTRAINT fk_maint_student FOREIGN KEY (ReportedBy) REFERENCES Students(StudentID),
-    CONSTRAINT fk_maint_admin   FOREIGN KEY (AssignedTo) REFERENCES Admins(AdminID)
-);
-GO
-
-PRINT 'All 20 tables created successfully!';
-PRINT 'Tables: Departments, HallTiers, RoomTypes, ComplaintCategories,';
+PRINT 'All tables created successfully!';
+PRINT 'Tables: Departments, RoomTypes, ComplaintCategories,';
 PRINT '        PaymentMethods, Halls, Floors, Rooms, Students, AdminRoles,';
-PRINT '        Admins, Bookings, RoomTransfers, MessCategories, FoodItems,';
-PRINT '        MessMenu, MessSubscriptions, FeeStructure, RoomFeeRecords,';
+PRINT '        Admins, Bookings, MessCategories, FoodItems,';
+PRINT '        MessMenu, FeeStructure, RoomFeeRecords,';
 PRINT '        MessBillRecords, PaymentTransactions, Complaints,';
-PRINT '        ComplaintHistory, VisitorLog, Attendance, Announcements,';
-PRINT '        MaintenanceRequests';
-
-
+PRINT '        MessAttendance';
 GO

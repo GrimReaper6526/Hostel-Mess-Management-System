@@ -19,7 +19,6 @@ CREATE PROCEDURE sp_RegisterStudent
     @Email        VARCHAR(120),
     @PasswordHash VARCHAR(255),
     @Phone        VARCHAR(15),
-    @Gender       CHAR(1),
     @CGPA         DECIMAL(3,2),
     @DeptID       INT,
     @Semester     INT,
@@ -44,8 +43,8 @@ BEGIN
             THROW 50003, 'Invalid department ID.', 1;
 
         -- Insert student
-        INSERT INTO Students (RegNumber,FullName,Email,PasswordHash,Phone,Gender,CGPA,DeptID,Semester)
-        VALUES (@RegNumber,@FullName,@Email,@PasswordHash,@Phone,@Gender,@CGPA,@DeptID,@Semester);
+        INSERT INTO Students (RegNumber,FullName,Email,PasswordHash,Phone,CGPA,DeptID,Semester)
+        VALUES (@RegNumber,@FullName,@Email,@PasswordHash,@Phone,@CGPA,@DeptID,@Semester);
 
         SET @NewStudentID = SCOPE_IDENTITY();  -- Get last inserted ID
 
@@ -341,74 +340,7 @@ END;
 GO
 
 -- ────────────────────────────────────────────────────────────
--- SP 7: Transfer Student Room
--- CONCEPT: Complex transaction, multiple table updates
--- ────────────────────────────────────────────────────────────
-CREATE PROCEDURE sp_TransferStudentRoom
-    @StudentID  INT,
-    @NewRoomID  INT,
-    @AdminID    INT,
-    @Reason     VARCHAR(300)
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    DECLARE @OldBookingID INT, @OldRoomID INT, @OldHallID INT;
-    DECLARE @NewHallID INT;
-
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        -- Get current booking
-        SELECT TOP 1 @OldBookingID = BookingID, @OldRoomID = RoomID, @OldHallID = HallID
-        FROM Bookings
-        WHERE StudentID = @StudentID AND Status = 'Active';
-
-        IF @OldBookingID IS NULL
-            THROW 50040, 'Student has no active booking to transfer from.', 1;
-
-        -- Get new room's hall
-        SELECT @NewHallID = HallID FROM Rooms WHERE RoomID = @NewRoomID;
-        IF @NewHallID IS NULL THROW 50041, 'New room not found.', 1;
-
-        -- Check new room is available
-        IF NOT EXISTS (SELECT 1 FROM Rooms WHERE RoomID = @NewRoomID AND IsAvailable = 1)
-            THROW 50042, 'New room is not available.', 1;
-
-        -- Log transfer
-        INSERT INTO RoomTransfers (StudentID,OldRoomID,NewRoomID,OldHallID,NewHallID,Reason,ApprovedBy,Status)
-        VALUES (@StudentID, @OldRoomID, @NewRoomID, @OldHallID, @NewHallID, @Reason, @AdminID, 'Approved');
-
-        -- Vacate old booking
-        UPDATE Bookings
-        SET Status = 'Vacated', EndDate = CAST(GETDATE() AS DATE)
-        WHERE BookingID = @OldBookingID;
-
-        -- Mark old room available
-        UPDATE Rooms SET IsAvailable = 1 WHERE RoomID = @OldRoomID;
-
-        -- Create new booking
-        INSERT INTO Bookings (StudentID, RoomID, HallID, StartDate, Status, ApprovedBy)
-        VALUES (@StudentID, @NewRoomID, @NewHallID, CAST(GETDATE() AS DATE), 'Active', @AdminID);
-
-        -- Mark new room unavailable
-        UPDATE Rooms SET IsAvailable = 0 WHERE RoomID = @NewRoomID;
-
-        COMMIT TRANSACTION;
-        PRINT 'Room transfer completed successfully.';
-        RETURN 0;
-
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        PRINT 'Transfer failed: ' + ERROR_MESSAGE();
-        RETURN -1;
-    END CATCH
-END;
-GO
-
--- ────────────────────────────────────────────────────────────
--- SP 8: Monthly Revenue Report
+-- SP 7: Monthly Revenue Report
 -- CONCEPT: Aggregate queries, temp table, result set
 -- ────────────────────────────────────────────────────────────
 CREATE PROCEDURE sp_MonthlyRevenueReport
@@ -460,11 +392,8 @@ BEGIN
 END;
 GO
 
-PRINT '8 Stored Procedures created!';
+PRINT '7 Stored Procedures created!';
 PRINT 'sp_RegisterStudent, sp_ApplyBooking, sp_ProcessBooking,';
 PRINT 'sp_GenerateMonthlyFees (cursor), sp_RecordFeePayment,';
-PRINT 'sp_SearchStudents (dynamic SQL), sp_TransferStudentRoom, sp_MonthlyRevenueReport';
-
-
-
+PRINT 'sp_SearchStudents (dynamic SQL), sp_MonthlyRevenueReport';
 GO

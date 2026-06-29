@@ -13,7 +13,6 @@ BEGIN
         NotificationID INT IDENTITY(1,1) PRIMARY KEY,
         StudentID      INT NOT NULL,
         Message        NVARCHAR(500) NOT NULL,
-        Icon           NVARCHAR(10) DEFAULT N'🔔',
         IsRead         BIT NOT NULL DEFAULT 0,
         CreatedAt      DATETIME NOT NULL DEFAULT GETDATE(),
         CONSTRAINT fk_notifications_student FOREIGN KEY (StudentID) 
@@ -23,12 +22,11 @@ BEGIN
 END
 ELSE
 BEGIN
-    -- Ensure columns are updated to NVARCHAR
-    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Notifications') AND name = 'Icon' AND system_type_id = (SELECT system_type_id FROM sys.types WHERE name = 'varchar'))
+    -- Ensure Message is updated to NVARCHAR
+    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Notifications') AND name = 'Message' AND system_type_id = (SELECT system_type_id FROM sys.types WHERE name = 'varchar'))
     BEGIN
-        ALTER TABLE Notifications ALTER COLUMN Icon NVARCHAR(10);
         ALTER TABLE Notifications ALTER COLUMN Message NVARCHAR(500);
-        PRINT 'Notifications table columns updated to NVARCHAR.';
+        PRINT 'Notifications table message column updated to NVARCHAR.';
     END
     ELSE
     BEGIN

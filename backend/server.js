@@ -1306,7 +1306,7 @@ app.get('/api/mess/menu', authenticateJWT, async (req, res) => {
     try {
         const db = await getPool();
         const result = await db.request().query(`
-            SELECT mm.MenuID, mm.DayOfWeek, RTRIM(mc.CategoryName) AS MealType, fi.FoodName AS MenuItem, fi.Price, mm.HallID
+            SELECT mm.MenuID, mm.DayOfWeek, RTRIM(mc.CategoryName) AS MealType, fi.FoodName AS MenuItem, fi.Price
             FROM MessMenu mm
             JOIN MessCategories mc ON mm.MessCatID = mc.MessCatID
             JOIN FoodItems fi ON mm.FoodID = fi.FoodID
@@ -1546,8 +1546,8 @@ app.put('/api/admin/fees/verify/:transactionId', authenticateJWT, requireRole(['
         await db.request()
             .input('sid', sql.Int, txn.StudentID)
             .input('msg', sql.VarChar, notifMsg)
-            .query(`INSERT INTO Notifications (StudentID, Message, Icon, IsRead, CreatedAt)
-                    VALUES (@sid, @msg, '💳', 0, GETDATE())`);
+            .query(`INSERT INTO Notifications (StudentID, Message, IsRead, CreatedAt)
+                    VALUES (@sid, @msg, 0, GETDATE())`);
 
         res.json({ success: true, message: 'Payment successfully verified and settled.' });
     } catch (err) {
@@ -1765,8 +1765,8 @@ app.get('/api/admin/fees/all', authenticateJWT, requireRole(['admin']), async (r
             SELECT f.*, s.FullName, s.RegNumber, h.HallName, 'Mess' as FeeType
             FROM MessBillRecords f
             JOIN Students s ON f.StudentID = s.StudentID
-            JOIN MessSubscriptions ms ON f.SubID = ms.SubscriptionID
-            JOIN Halls h ON ms.HallID = h.HallID
+            LEFT JOIN Bookings b ON b.StudentID = f.StudentID AND b.Status = 'Active'
+            LEFT JOIN Halls h ON b.HallID = h.HallID
             ORDER BY f.Year DESC, f.Month DESC`);
             
         res.json({ roomFees: roomFees.recordset, messFees: messFees.recordset });
@@ -2346,7 +2346,6 @@ async function initializeDatabase() {
                     NotificationID INT IDENTITY(1,1) PRIMARY KEY,
                     StudentID INT NOT NULL,
                     Message VARCHAR(500) NOT NULL,
-                    Icon VARCHAR(10) DEFAULT '🔔',
                     IsRead BIT NOT NULL DEFAULT 0,
                     CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
                     CONSTRAINT fk_notifications_student FOREIGN KEY (StudentID) REFERENCES Students(StudentID) ON DELETE CASCADE
@@ -2440,28 +2439,34 @@ app.post('/api/admin/mess/attendance', authenticateJWT, requireRole(['admin']), 
         const mealUnit = mealType === 'Breakfast' ? 0.75 : (mealType === 'Lunch' ? 0.80 : 0.82);
         const finalPrice = Price * mealUnit;
 
-        // 5. Insert Attendance Record
+        // 5. Lookup student name
+        const studentResult = await db.request()
+            .input('sid', sql.Int, studentId)
+            .query('SELECT FullName FROM Students WHERE StudentID = @sid');
+        const studentName = studentResult.recordset.length > 0 ? studentResult.recordset[0].FullName : null;
+
+        // 6. Insert Attendance Record with StudentName
         await db.request()
             .input('sid', sql.Int, studentId)
+            .input('sname', sql.VarChar(100), studentName)
             .input('mid', sql.Int, MenuID)
             .input('type', sql.VarChar, mealType)
             .input('price', sql.Decimal(10, 2), Price)
             .input('unit', sql.Decimal(5, 2), mealUnit)
             .input('finalPrice', sql.Decimal(10, 2), finalPrice)
             .query(`
-                INSERT INTO MessAttendance (StudentID, MenuID, MealType, PriceAtTime, MealUnit, FinalPrice)
-                VALUES (@sid, @mid, @type, @price, @unit, @finalPrice)
+                INSERT INTO MessAttendance (StudentID, StudentName, MenuID, MealType, PriceAtTime, MealUnit, FinalPrice)
+                VALUES (@sid, @sname, @mid, @type, @price, @unit, @finalPrice)
             `);
 
-        // 6. Create Student Notification in database
+        // 7. Create Student Notification in database
         const notifMsg = `Your attendance for today's ${mealType} has been marked by Admin.`;
         await db.request()
             .input('sid', sql.Int, studentId)
             .input('msg', sql.VarChar, notifMsg)
-            .input('icon', sql.VarChar, '🍽️')
             .query(`
-                INSERT INTO Notifications (StudentID, Message, Icon, IsRead, CreatedAt)
-                VALUES (@sid, @msg, @icon, 0, GETDATE())
+                INSERT INTO Notifications (StudentID, Message, IsRead, CreatedAt)
+                VALUES (@sid, @msg, 0, GETDATE())
             `);
 
         res.json({ success: true, finalPrice, message: `Attendance marked and notification sent.` });
@@ -2482,7 +2487,7 @@ app.get('/api/notifications/student/:studentId', authenticateJWT, async (req, re
         const result = await db.request()
             .input('sid', sql.Int, req.params.studentId)
             .query(`
-                SELECT TOP 50 NotificationID, StudentID, Message, Icon, IsRead, CreatedAt 
+                SELECT TOP 50 NotificationID, StudentID, Message, IsRead, CreatedAt 
                 FROM Notifications 
                 WHERE StudentID = @sid 
                 ORDER BY CreatedAt DESC

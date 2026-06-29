@@ -35,7 +35,7 @@ async function fetchNotifications(silent = false) {
       msg: n.Message,
       time: formatTimeAgo(n.CreatedAt),
       read: n.IsRead,
-      icon: n.Icon || '🔔'
+      icon: '🔔'
     }));
 
     // Check if we have new unread notifications that were not in our local array
