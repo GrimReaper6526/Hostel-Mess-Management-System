@@ -22,13 +22,6 @@ INSERT INTO Departments (DeptName, DeptCode, Faculty) VALUES
 ('Economics',               'ECO',  'Faculty of Social Sciences');
 GO
 
--- ── HALL TIERS ───────────────────────────────────────────────
-INSERT INTO HallTiers (TierName, MinCGPA, MaxCGPA, Description) VALUES
-('Premium',  3.50, 4.00, 'High achievers — CGPA 3.50 and above. Fully air-conditioned.'),
-('Standard', 2.50, 3.49, 'Good standing — CGPA 2.50 to 3.49. WiFi and common room.'),
-('Basic',    0.00, 2.49, 'Open to all students — CGPA below 2.50. Basic amenities.');
-GO
-
 -- ── ROOM TYPES ───────────────────────────────────────────────
 INSERT INTO RoomTypes (TypeName, Capacity, Description) VALUES
 ('2-Seater', 2, 'Shared room for two students'),
@@ -57,12 +50,11 @@ INSERT INTO PaymentMethods (MethodName) VALUES
 ('Cheque');
 GO
 
--- ── HALLS ────────────────────────────────────────────────────
-INSERT INTO Halls (HallName, TierID, TotalRooms, Location, Facilities, EstYear, TargetYear) VALUES
-('I Hall',  1, 100, 'North Campus Block A', 'AC, WiFi, Study Room, Gym, 24/7 Power', 2010, 4),
-('Q Hall',  2, 100, 'Central Campus Block B','WiFi, Common Room, Laundry, Cafeteria', 2005, 2),
-('AB Hall', 3, 100, 'South Campus Block C',  'Common Room, Cafeteria, Parking',       1998, 3),
-('JB Hall', 2, 100, 'Central Campus Block D', 'WiFi, Common Room, Study Area',         2015, 1);
+INSERT INTO Halls (HallName, TotalRooms, Location, Facilities, EstYear, TargetYear) VALUES
+('I Hall',  100, 'North Campus Block A', 'AC, WiFi, Study Room, Gym, 24/7 Power', 2010, 4),
+('Q Hall',  100, 'Central Campus Block B','WiFi, Common Room, Laundry, Cafeteria', 2005, 2),
+('AB Hall', 100, 'South Campus Block C',  'Common Room, Cafeteria, Parking',       1998, 3),
+('JB Hall', 100, 'Central Campus Block D', 'WiFi, Common Room, Study Area',         2015, 1);
 GO
 
 -- ── FLOORS ───────────────────────────────────────────────────
@@ -185,11 +177,9 @@ INSERT INTO MessMenu (DayOfWeek,MessCatID,FoodID) VALUES
 GO
 
 -- ── FEE STRUCTURE ────────────────────────────────────────────
-INSERT INTO FeeStructure (FeeType,TierID,Amount,EffectiveFrom,Description) VALUES
-('Room Fee - 2-Seater',  NULL, 8000,'2024-01-01','Monthly room rental fee for 2-Seater rooms'),
-('Room Fee - 5-Seater',  NULL, 5000,'2024-01-01','Monthly room rental fee for 5-Seater rooms'),
-('Security Deposit',     NULL, 5000,'2024-01-01','One-time refundable security deposit'),
-('Electricity Surcharge',1,    800,'2024-01-01','Monthly electricity AC surcharge');
+INSERT INTO FeeStructure (FeeType,Amount,EffectiveFrom,Description) VALUES
+('Room Fee - 2-Seater',  8000,'2024-01-01','Monthly room rental fee for 2-Seater rooms'),
+('Room Fee - 5-Seater',  5000,'2024-01-01','Monthly room rental fee for 5-Seater rooms');
 GO
 
 PRINT 'All lookup and configuration seed data inserted successfully!';

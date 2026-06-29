@@ -1029,11 +1029,10 @@ app.get('/api/halls', authenticateJWT, async (req, res) => {
     try {
         const db = await getPool();
         const result = await db.request().query(`
-            SELECT h.*, t.TierName AS Tier, t.MinCGPA, t.MaxCGPA,
+            SELECT h.*,
                 COUNT(DISTINCT r.RoomID) AS TotalRoomCount,
                 SUM(CASE WHEN ISNULL(occ.Cnt, 0) < rt.Capacity THEN 1 ELSE 0 END) AS AvailableRooms
             FROM Halls h 
-            JOIN HallTiers t ON h.TierID = t.TierID
             LEFT JOIN Rooms r ON h.HallID = r.HallID
             LEFT JOIN RoomTypes rt ON r.RoomTypeID = rt.RoomTypeID
             LEFT JOIN (
@@ -1042,8 +1041,8 @@ app.get('/api/halls', authenticateJWT, async (req, res) => {
                 WHERE Status IN ('Approved','Active','Pending') 
                 GROUP BY RoomID
             ) occ ON r.RoomID = occ.RoomID
-            GROUP BY h.HallID, h.HallName, h.TierID, t.TierName, t.MinCGPA, t.MaxCGPA, h.TotalRooms, h.Location, h.Facilities, h.EstYear, h.IsActive, h.CreatedAt, h.TargetYear
-            ORDER BY t.MinCGPA DESC`);
+            GROUP BY h.HallID, h.HallName, h.TotalRooms, h.Location, h.Facilities, h.EstYear, h.IsActive, h.CreatedAt, h.TargetYear
+            ORDER BY h.HallName`);
         res.json(result.recordset);
     } catch (err) {
         console.error('Get Halls Error:', err);
@@ -1091,12 +1090,9 @@ app.get('/api/halls/eligible/:studentId', authenticateJWT, async (req, res) => {
         const score = s.CGPA || 0.0;
 
         const result = await db.request()
-            .input('score', sql.Decimal(3,2), score)
             .input('year', sql.Int, studyYear)
-            .query(`SELECT h.*, t.TierName, t.MinCGPA, t.MaxCGPA FROM Halls h
-                    JOIN HallTiers t ON h.TierID = t.TierID
-                    WHERE (h.TargetYear = @year)
-                    OR (h.TargetYear IS NULL AND @score BETWEEN t.MinCGPA AND t.MaxCGPA)`);
+            .query(`SELECT h.* FROM Halls h
+                    WHERE (h.TargetYear = @year) OR (h.TargetYear IS NULL)`);
         res.json(result.recordset);
     } catch (err) {
         console.error('Get Eligible Halls Error:', err);
@@ -1182,12 +1178,9 @@ app.post('/api/bookings', authenticateJWT, async (req, res) => {
         const studyYear = Math.ceil(s.Semester / 2);
 
         const hallResult = await db.request()
-            .input('sid', sql.Int, studentId)
             .input('year', sql.Int, studyYear)
             .query(`SELECT TOP 1 h.HallID, h.HallName FROM Halls h
-                    JOIN HallTiers t ON h.TierID = t.TierID
-                    WHERE (h.TargetYear = @year)
-                    OR (h.TargetYear IS NULL AND (SELECT CGPA FROM Students WHERE StudentID=@sid) BETWEEN t.MinCGPA AND t.MaxCGPA)`);
+                    WHERE (h.TargetYear = @year) OR (h.TargetYear IS NULL)`);
 
         if (!hallResult.recordset.length)
             return res.status(400).json({ error: 'No eligible hall found' });
@@ -1227,10 +1220,9 @@ app.get('/api/bookings/student/:studentId', authenticateJWT, async (req, res) =>
         const db = await getPool();
         const result = await db.request()
             .input('sid', sql.Int, req.params.studentId)
-            .query(`SELECT b.*, h.HallName, t.TierName AS Tier, r.RoomNumber, r.RoomTypeID, rmt.TypeName AS RoomType, r.MonthlyFee
+            .query(`SELECT b.*, h.HallName, r.RoomNumber, r.RoomTypeID, rmt.TypeName AS RoomType, r.MonthlyFee
                     FROM Bookings b
                     JOIN Halls h ON b.HallID = h.HallID
-                    JOIN HallTiers t ON h.TierID = t.TierID
                     JOIN Rooms r ON b.RoomID = r.RoomID
                     JOIN RoomTypes rmt ON r.RoomTypeID = rmt.RoomTypeID
                     WHERE b.StudentID = @sid ORDER BY b.BookingDate DESC`);

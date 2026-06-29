@@ -90,8 +90,8 @@ BEGIN
         IF @StudentCGPA IS NULL
             THROW 50010, 'Student not found.', 1;
 
-        -- Get room's hall and tier info
-        SELECT @RoomHallID = r.HallID, @RoomTierID = h.TierID
+        -- Get room's hall info
+        SELECT @RoomHallID = r.HallID
         FROM Rooms r
         INNER JOIN Halls h ON r.HallID = h.HallID
         WHERE r.RoomID = @RoomID;
@@ -101,13 +101,6 @@ BEGIN
         -- Check room availability
         IF NOT EXISTS (SELECT 1 FROM Rooms WHERE RoomID = @RoomID AND IsAvailable = 1)
             THROW 50012, 'Room is not available.', 1;
-
-        -- Check CGPA eligibility
-        SELECT @TierMinCGPA = t.MinCGPA, @TierMaxCGPA = t.MaxCGPA
-        FROM HallTiers t WHERE t.TierID = @RoomTierID;
-
-        IF @StudentCGPA < @TierMinCGPA OR @StudentCGPA > @TierMaxCGPA
-            THROW 50013, 'Your CGPA does not meet the requirement for this hall tier.', 1;
 
         -- Check no existing active booking
         IF EXISTS (
@@ -143,14 +136,15 @@ GO
 CREATE PROCEDURE sp_ProcessBooking
     @BookingID INT,
     @AdminID   INT,
-    @Action    VARCHAR(10),    -- 'Approve' or 'Reject'
-    @Reason    VARCHAR(300) = NULL
+    @Action    VARCHAR(10)    -- 'Approve' or 'Reject'
 AS
 BEGIN
     SET NOCOUNT ON;
 
     IF @Action NOT IN ('Approve','Reject')
         THROW 50020, 'Invalid action. Use Approve or Reject.', 1;
+
+    DECLARE @AdminName VARCHAR(100);
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -159,15 +153,15 @@ BEGIN
         IF NOT EXISTS (SELECT 1 FROM Bookings WHERE BookingID = @BookingID AND Status = 'Pending')
             THROW 50021, 'Booking not found or is not in Pending status.', 1;
 
-        -- Validate admin
-        IF NOT EXISTS (SELECT 1 FROM Admins WHERE AdminID = @AdminID AND IsActive = 1)
+        -- Get and Validate admin name
+        SELECT @AdminName = FullName FROM Admins WHERE AdminID = @AdminID AND IsActive = 1;
+        IF @AdminName IS NULL
             THROW 50022, 'Admin not found.', 1;
 
         -- Update booking
         UPDATE Bookings
         SET Status = CASE @Action WHEN 'Approve' THEN 'Active' ELSE 'Rejected' END,
-            ApprovedBy = @AdminID,
-            RejectionReason = CASE @Action WHEN 'Reject' THEN @Reason ELSE NULL END
+            ApprovedBy = @AdminName
         WHERE BookingID = @BookingID;
 
         COMMIT TRANSACTION;
@@ -315,10 +309,9 @@ BEGIN
 
     SET @SQL = N'
         SELECT s.StudentID, s.RegNumber, s.FullName, s.Email, s.CGPA,
-               d.DeptName, s.Semester, t.TierName AS HallTier
+               d.DeptName, s.Semester
         FROM Students s
         INNER JOIN Departments d ON s.DeptID = d.DeptID
-        INNER JOIN HallTiers   t ON s.CGPA BETWEEN t.MinCGPA AND t.MaxCGPA
         WHERE s.IsActive = 1';
 
     IF @SearchTerm IS NOT NULL
@@ -428,7 +421,6 @@ BEGIN
     -- Temp table
     CREATE TABLE #RevenueReport (
         HallName     VARCHAR(100),
-        TierName     VARCHAR(20),
         RoomRevenue  DECIMAL(10,2),
         MessRevenue  DECIMAL(10,2),
         TotalRevenue DECIMAL(10,2),
@@ -438,20 +430,18 @@ BEGIN
     INSERT INTO #RevenueReport
     SELECT
         h.HallName,
-        t.TierName,
         ISNULL(SUM(CASE WHEN rf.IsPaid=1 THEN rf.Amount ELSE 0 END), 0) AS RoomRevenue,
         0 AS MessRevenue,
         ISNULL(SUM(CASE WHEN rf.IsPaid=1 THEN rf.Amount ELSE 0 END), 0) AS TotalRevenue,
         COUNT(CASE WHEN rf.IsPaid=0 THEN 1 END)                          AS UnpaidCount
     FROM Halls h
-    LEFT JOIN HallTiers      t  ON h.TierID     = t.TierID
     LEFT JOIN Bookings        b  ON b.HallID     = h.HallID AND b.Status='Active'
     LEFT JOIN RoomFeeRecords  rf ON rf.BookingID = b.BookingID
                                  AND rf.Month = @Month AND rf.Year = @Year
-    GROUP BY h.HallName, t.TierName;
+    GROUP BY h.HallName;
 
     SELECT
-        HallName, TierName,
+        HallName,
         RoomRevenue, MessRevenue, TotalRevenue, UnpaidCount,
         DATENAME(MONTH, DATEFROMPARTS(@Year,@Month,1)) + ' ' + CAST(@Year AS VARCHAR) AS Period
     FROM #RevenueReport

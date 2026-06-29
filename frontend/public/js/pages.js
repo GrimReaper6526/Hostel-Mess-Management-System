@@ -487,30 +487,25 @@ async function loadHalls() {
     const hallsGrid = document.getElementById('halls-grid');
     if (hallsGrid) {
       hallsGrid.innerHTML = halls.map(h => {
-        const t = h.Tier.toLowerCase();
-        
         // --- UPDATED ELIGIBILITY LOGIC ---
         const studentYear = currentUser ? Math.ceil(currentUser.Semester / 2) : null;
         const eligible = currentRole === 'student' && (
-          (h.TargetYear === studentYear) || 
-          (h.TargetYear === null && cgpa >= h.MinCGPA && cgpa <= h.MaxCGPA)
+          (h.TargetYear === studentYear) || (h.TargetYear === null)
         );
         // ---------------------------------
-        const icons = { premium: '🌟', standard: '⭐', basic: '🏠' };
         const occupancyPct = Math.round(((h.TotalRooms - (h.AvailableRooms || 0)) / h.TotalRooms) * 100) || 0;
         const facilities = h.Facilities ? h.Facilities.split(',').map(f => f.trim()) : [];
 
         return `
           <div class="hall-card ${eligible ? 'eligible' : ''}" onclick="${currentRole === 'admin' ? '' : `handleHallCardClick(${JSON.stringify(h).replace(/"/g, '&quot;')}, ${eligible})`}">
-            <div class="hc-banner ${t}">
-              <span class="hc-tier-icon">${icons[t] || '🏛️'}</span>
+            <div class="hc-banner standard">
+              <span class="hc-tier-icon">🏛️</span>
               <div class="hc-name">${h.HallName}</div>
-              <span class="hc-tier-pill">${h.Tier} Tier</span>
             </div>
             <div class="hc-body">
               <div class="hc-row">
                 <span class="lbl">Requirement</span>
-                <span class="val">Year ${h.TargetYear || 'All'} | CGPA ${h.MinCGPA}–${h.MaxCGPA}</span>
+                <span class="val">Year ${h.TargetYear || 'All'}</span>
               </div>
               <div class="hc-row">
                 <span class="lbl">Live Occupancy</span>
@@ -787,8 +782,8 @@ async function loadBooking() {
     <div class="announce" style="margin-bottom:20px">
       <span class="announce-icon">🏛️</span>
       <div class="announce-text">
-        <h4>Auto-Assigned: ${eligible.HallName} (${eligible.TierName || 'Standard'} Tier)</h4>
-        <p>Based on your academic profile, you qualify for <strong>${eligible.HallName}</strong>. Select an available room below.</p>
+        <h4>Auto-Assigned: ${eligible.HallName}</h4>
+        <p>Based on your study year, you qualify for <strong>${eligible.HallName}</strong>. Select an available room below.</p>
       </div>
     </div>
 
@@ -2467,7 +2462,7 @@ function startAttendance() {
 function requestRoomSwap() {
     const content = `
         <div class="announce" style="background:var(--sky); border:none">
-            <p style="color:white"><strong>Note:</strong> Swapping is only allowed between students of same tier.</p>
+            <p style="color:white"><strong>Note:</strong> Room swap requests are subject to warden review and room availability.</p>
         </div>
         <div class="form-group">
             <label>Preferred Room Number</label>

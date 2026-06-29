@@ -41,18 +41,6 @@ CREATE TABLE Departments (
 );
 GO
 
--- 1.2 HALL TIERS (lookup table — avoids string duplication)
--- CONCEPT: 1NF — no repeating groups
-CREATE TABLE HallTiers (
-    TierID      INT IDENTITY(1,1) PRIMARY KEY,
-    TierName    VARCHAR(20) NOT NULL UNIQUE CHECK (TierName IN ('Premium','Standard','Basic')),
-    MinCGPA     DECIMAL(3,2) NOT NULL CHECK (MinCGPA >= 0.00),
-    MaxCGPA     DECIMAL(3,2) NOT NULL CHECK (MaxCGPA <= 4.00),
-    Description VARCHAR(200),
-    CONSTRAINT chk_cgpa_range CHECK (MinCGPA < MaxCGPA)  -- named CHECK constraint
-);
-GO
-
 -- 1.3 ROOM TYPES
 CREATE TABLE RoomTypes (
     RoomTypeID  INT IDENTITY(1,1) PRIMARY KEY,
@@ -88,17 +76,13 @@ GO
 CREATE TABLE Halls (
     HallID      INT IDENTITY(1,1) PRIMARY KEY,
     HallName    VARCHAR(100) NOT NULL UNIQUE,
-    TierID      INT NOT NULL,                       -- FK to HallTiers
     TotalRooms  INT NOT NULL CHECK (TotalRooms > 0),
     Location    VARCHAR(100),
     Facilities  VARCHAR(500),
     EstYear     INT CHECK (EstYear BETWEEN 1900 AND 2100),
     IsActive    BIT DEFAULT 1,
     TargetYear  INT NULL CHECK (TargetYear BETWEEN 1 AND 4),
-    CreatedAt   DATETIME DEFAULT GETDATE(),
-    CONSTRAINT fk_halls_tier FOREIGN KEY (TierID)   -- Named FK constraint
-        REFERENCES HallTiers(TierID)
-        ON UPDATE CASCADE                           -- Referential action: CASCADE
+    CreatedAt   DATETIME DEFAULT GETDATE()
 );
 GO
 
@@ -260,8 +244,7 @@ CREATE TABLE FoodItems (
     IsVeg       BIT DEFAULT 0,
     IsHalal     BIT DEFAULT 1,
     Calories    INT CHECK (Calories >= 0),
-    Price       DECIMAL(10,2) NOT NULL DEFAULT 150.00,
-    AllergyInfo VARCHAR(200)
+    Price       DECIMAL(10,2) NOT NULL DEFAULT 150.00
 );
 GO
 
@@ -307,13 +290,10 @@ GO
 -- 5.1 FEE STRUCTURE (what fees exist)
 CREATE TABLE FeeStructure (
     FeeStructureID INT IDENTITY(1,1) PRIMARY KEY,
-    FeeType        VARCHAR(50) NOT NULL,  -- Room Fee, Mess Fee, Security Deposit, etc.
-    TierID         INT,                   -- Applies to which tier (NULL = all)
+    FeeType        VARCHAR(50) NOT NULL,  -- Room Fee, Mess Fee, etc.
     Amount         DECIMAL(10,2) NOT NULL CHECK (Amount >= 0),
     EffectiveFrom  DATE NOT NULL,
-    EffectiveTo    DATE,
-    Description    VARCHAR(300),
-    CONSTRAINT fk_feestr_tier FOREIGN KEY (TierID) REFERENCES HallTiers(TierID)
+    Description    VARCHAR(300)
 );
 GO
 
